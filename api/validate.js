@@ -1,5 +1,5 @@
 export default function handler(req, res) {
-    const { key } = req.query;
+    const { key } = req.body;
 
     const validKeys = [
         "ABC123",
