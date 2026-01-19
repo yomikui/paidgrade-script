@@ -1,4 +1,8 @@
 export default function handler(req, res) {
+    if (req.method !== "POST") {
+        return res.status(405).json({ valid: false });
+    }
+
     const { key } = req.body;
 
     const validKeys = [
@@ -13,7 +17,7 @@ export default function handler(req, res) {
 
     if (validKeys.includes(key)) {
         return res.status(200).json({ valid: true });
-    } else {
-        return res.status(401).json({ valid: false });
     }
+
+    return res.status(401).json({ valid: false });
 }
