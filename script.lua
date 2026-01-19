@@ -55,9 +55,13 @@ if not data.valid then
 end
 
 -- =====================================================
--- AUTO-BAT + SPEED SCRIPT START
+-- AUTO BAT & SPEED (SEPARATE)
 -- =====================================================
 
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 -- Speed values
@@ -65,9 +69,9 @@ local NORMAL_SPEED = 57.25
 local CARRY_SPEED = 29
 
 -- Burst settings
-local BURST_SPEED = 29.15
+local BURST_SPEED = 29.10
 local BURST_DELAY = 3.5
-local BURST_DURATION = 0.10
+local BURST_DURATION = 0.06
 
 -- State
 local speedToggled = false
@@ -106,6 +110,7 @@ local speedBtn = makeBtn("Speed", 10, Color3.fromRGB(255,0,0))
 local autoBatBtn = makeBtn("Auto-Bat", 60, Color3.fromRGB(255,0,0))
 local closeBtn = makeBtn("X", 110, Color3.fromRGB(150,0,0))
 
+-- Label for Q instruction
 local helpLabel = Instance.new("TextLabel")
 helpLabel.Size = UDim2.new(0, 260, 0, 30)
 helpLabel.Position = UDim2.new(0, 10, 0, 160)
@@ -214,7 +219,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- ===== GUI Buttons =====
+-- ===== GUI Button Logic =====
 speedBtn.MouseButton1Click:Connect(function()
     speedToggled = not speedToggled
 end)
@@ -241,14 +246,15 @@ RunService.RenderStepped:Connect(function()
     speedBtn.Text = string.format("Speed: %.2f", speed)
 
     if speedLbl then
-        local displaySpeed = Vector3.new(hrp.Velocity.X,0,hrp.Velocity.Z).Magnitude
+        local displaySpeed = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z).Magnitude
         speedLbl.Text = "Speed: " .. string.format("%.1f", displaySpeed)
     end
 end)
 
--- ===== Auto Bat =====
+-- ===== Auto Bat Loop =====
 RunService.Heartbeat:Connect(function()
     if autoBatToggled then
         tryHitBat()
     end
 end)
+
