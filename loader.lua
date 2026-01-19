@@ -1,3 +1,7 @@
+-- =========================================
+-- PAIDGRADE LOADER
+-- =========================================
+
 -- CONFIG
 local SCRIPT_NAME = "PaidGrade"
 local KEY_URL = "https://paidgrade-api.vercel.app/api/validate"
@@ -7,7 +11,7 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
 -- EXECUTOR HTTP
-local request = syn and syn.request or http_request or request
+local request = (syn and syn.request) or http_request or request
 if not request then
     warn("[PaidGrade] Executor does not support HTTP requests")
     return
@@ -47,6 +51,7 @@ if res.StatusCode ~= 200 then
     return
 end
 
+-- PARSE RESPONSE
 local data
 local ok, err = pcall(function()
     data = HttpService:JSONDecode(res.Body)
@@ -58,8 +63,18 @@ if not ok or not data then
 end
 
 if not data.valid then
-    Players.LocalPlayer:Kick("[PaidGrade] Key invalid or expired")
+    local msg = data.error or "Key invalid or expired"
+    Players.LocalPlayer:Kick("[PaidGrade] " .. msg)
     return
+end
+
+-- SHOW ACTIVATION DATE
+if data.activatedAt then
+    local ts = data.activatedAt / 1000
+    local date = os.date("*t", ts)
+    local formatted = string.format("%02d/%02d/%04d %02d:%02d:%02d",
+        date.day, date.month, date.year, date.hour, date.min, date.sec)
+    warn("[PaidGrade] Key activated on: " .. formatted)
 end
 
 -- LOAD MAIN SCRIPT
