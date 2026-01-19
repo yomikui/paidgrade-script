@@ -65,7 +65,6 @@ end
 print("[PaidGrade] Key validated successfully")
 
 -- YOUR ACTUAL SCRIPT LOGIC GOES HERE
-
 -- =====================================================
 -- AUTO BAT & SPEED (SEPARATE)
 -- =====================================================
@@ -77,20 +76,13 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 -- Speed values
-local NORMAL_SPEED = 57.25
-local CARRY_SPEED = 29
-
--- Burst settings
-local BURST_SPEED = 29.10
-local BURST_DELAY = 3.5
-local BURST_DURATION = 0.06
+local NORMAL_SPEED = 57
+local CARRY_SPEED = 28.8
 
 -- State
 local speedToggled = false
 local autoBatToggled = false
 local hittingCooldown = false
-local burstActive = false
-local burstTaskId = 0
 
 -- ===== GUI =====
 local gui = Instance.new("ScreenGui")
@@ -118,7 +110,7 @@ local function makeBtn(txt, y, color)
     return b
 end
 
-local speedBtn = makeBtn("Speed", 10, Color3.fromRGB(255,0,0))
+local speedBtn = makeBtn("Speed", 10, Color3.fromRGB(0,255,0))
 local autoBatBtn = makeBtn("Auto-Bat", 60, Color3.fromRGB(255,0,0))
 local closeBtn = makeBtn("X", 110, Color3.fromRGB(150,0,0))
 
@@ -126,7 +118,7 @@ local closeBtn = makeBtn("X", 110, Color3.fromRGB(150,0,0))
 local helpLabel = Instance.new("TextLabel")
 helpLabel.Size = UDim2.new(0, 260, 0, 30)
 helpLabel.Position = UDim2.new(0, 10, 0, 160)
-helpLabel.Text = "Q - Brainrot Pickup Help"
+helpLabel.Text = "Q - Speed Toggle Help"
 helpLabel.Font = Enum.Font.GothamBold
 helpLabel.TextScaled = true
 helpLabel.TextColor3 = Color3.fromRGB(255,255,255)
@@ -211,23 +203,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.Q then
         speedToggled = not speedToggled
-
-        if speedToggled then
-            burstActive = false
-            burstTaskId += 1
-            local myTaskId = burstTaskId
-
-            task.delay(BURST_DELAY, function()
-                if speedToggled and burstTaskId == myTaskId then
-                    burstActive = true
-                    task.delay(BURST_DURATION, function()
-                        if burstTaskId == myTaskId then
-                            burstActive = false
-                        end
-                    end)
-                end
-            end)
-        end
     end
 end)
 
@@ -246,16 +221,17 @@ RunService.RenderStepped:Connect(function()
     if not (h and hrp) then return end
 
     local md = h.MoveDirection
-    local speed =
-        speedToggled
-        and (burstActive and BURST_SPEED or CARRY_SPEED)
-        or NORMAL_SPEED
+    local speed = speedToggled and CARRY_SPEED or NORMAL_SPEED
 
     if md.Magnitude > 0 then
         hrp.Velocity = Vector3.new(md.X * speed, hrp.Velocity.Y, md.Z * speed)
     end
 
-    speedBtn.Text = string.format("Speed: %.2f", speed)
+    -- Update speed button text & color
+    speedBtn.Text = string.format("Speed: %.1f", speed)
+    speedBtn.BackgroundColor3 = (speed == NORMAL_SPEED)
+        and Color3.fromRGB(0,255,0)
+        or Color3.fromRGB(255,0,0)
 
     if speedLbl then
         local displaySpeed = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z).Magnitude
@@ -269,4 +245,3 @@ RunService.Heartbeat:Connect(function()
         tryHitBat()
     end
 end)
-
