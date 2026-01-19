@@ -1,24 +1,21 @@
+-- =========================================
+-- PAIDGRADE MAIN SCRIPT
+-- =========================================
 
--- =====================================================
--- AUTO BAT & SPEED (SEPARATE)
--- =====================================================
-
--- Services
+-- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- Speed values
+-- SPEED SETTINGS
 local NORMAL_SPEED = 57.25
 local CARRY_SPEED = 29
-
--- Burst settings
 local BURST_SPEED = 29.10
 local BURST_DELAY = 3.5
 local BURST_DURATION = 0.06
 
--- State
+-- STATE
 local speedToggled = false
 local autoBatToggled = false
 local hittingCooldown = false
@@ -55,7 +52,7 @@ local speedBtn = makeBtn("Speed", 10, Color3.fromRGB(255,0,0))
 local autoBatBtn = makeBtn("Auto-Bat", 60, Color3.fromRGB(255,0,0))
 local closeBtn = makeBtn("X", 110, Color3.fromRGB(150,0,0))
 
--- Label for Q instruction
+-- HELP LABEL
 local helpLabel = Instance.new("TextLabel")
 helpLabel.Size = UDim2.new(0, 260, 0, 30)
 helpLabel.Position = UDim2.new(0, 10, 0, 160)
@@ -70,7 +67,7 @@ closeBtn.MouseButton1Click:Connect(function()
     gui:Destroy()
 end)
 
--- ===== Character setup =====
+-- ===== CHARACTER SETUP =====
 local h, hrp, speedLbl
 local function setupChar(char)
     h = char:WaitForChild("Humanoid")
@@ -98,7 +95,7 @@ if LocalPlayer.Character then
     setupChar(LocalPlayer.Character)
 end
 
--- ===== Get Bat =====
+-- ===== GET BAT =====
 local function getBat()
     local char = LocalPlayer.Character
     if not char then return nil end
@@ -117,7 +114,7 @@ local function getBat()
     return nil
 end
 
--- ===== Bat hit =====
+-- ===== BAT HIT =====
 local SAFE_DELAY = 0.08
 local function tryHitBat()
     if hittingCooldown then return end
@@ -139,7 +136,7 @@ local function tryHitBat()
     end)
 end
 
--- ===== Speed Toggle (Q) =====
+-- ===== SPEED TOGGLE (Q) =====
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.Q then
@@ -164,7 +161,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- ===== GUI Button Logic =====
+-- ===== GUI BUTTON LOGIC =====
 speedBtn.MouseButton1Click:Connect(function()
     speedToggled = not speedToggled
 end)
@@ -174,7 +171,7 @@ autoBatBtn.MouseButton1Click:Connect(function()
     autoBatBtn.BackgroundColor3 = autoBatToggled and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,0,0)
 end)
 
--- ===== Movement =====
+-- ===== MOVEMENT =====
 RunService.RenderStepped:Connect(function()
     if not (h and hrp) then return end
 
@@ -196,11 +193,9 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ===== Auto Bat Loop =====
+-- ===== AUTO BAT LOOP =====
 RunService.Heartbeat:Connect(function()
     if autoBatToggled then
         tryHitBat()
     end
 end)
-
-
