@@ -1,11 +1,63 @@
--- =====================================================
--- AUTO BAT & SPEED (SEPARATE)
--- =====================================================
+--// CONFIG
+local SCRIPT_NAME = "PaidGrade"
+local KEY_URL = "https://paidgrade-api.vercel.app/validate"
 
--- Services
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+
+--// EXECUTOR HTTP
+local request = http_request or request or syn.request
+if not request then
+    warn("[PaidGrade] Executor does not support HTTP requests")
+    return
+end
+
+--// USER KEY
+local key = _G.script_key or getgenv().script_key
+if not key then
+    Players.LocalPlayer:Kick("[PaidGrade] No key provided")
+end
+
+--// HWID
+local HWID = game:GetService("RbxAnalyticsService"):GetClientId()
+
+--// VERIFY KEY WITH API
+local success, res = pcall(function()
+    return request({
+        Url = KEY_URL,
+        Method = "POST",
+        Headers = { ["Content-Type"]="application/json" },
+        Body = HttpService:JSONEncode({ key=key, hwid=HWID, script=SCRIPT_NAME })
+    })
+end)
+
+if not success or not res then
+    Players.LocalPlayer:Kick("[PaidGrade] Key server unreachable")
+end
+
+if res.StatusCode ~= 200 then
+    Players.LocalPlayer:Kick("[PaidGrade] Server returned error: " .. tostring(res.StatusCode))
+end
+
+local data
+local decodeSuccess, decodeErr = pcall(function()
+    data = HttpService:JSONDecode(res.Body)
+end)
+
+if not decodeSuccess or not data then
+    Players.LocalPlayer:Kick("[PaidGrade] Invalid server response")
+end
+
+if not data.valid then
+    Players.LocalPlayer:Kick("[PaidGrade] Key invalid or expired")
+end
+
+-- =====================================================
+-- AUTO-BAT + SPEED SCRIPT START
+-- =====================================================
+
 local LocalPlayer = Players.LocalPlayer
 
 -- Speed values
@@ -54,7 +106,6 @@ local speedBtn = makeBtn("Speed", 10, Color3.fromRGB(255,0,0))
 local autoBatBtn = makeBtn("Auto-Bat", 60, Color3.fromRGB(255,0,0))
 local closeBtn = makeBtn("X", 110, Color3.fromRGB(150,0,0))
 
--- Label for Q instruction
 local helpLabel = Instance.new("TextLabel")
 helpLabel.Size = UDim2.new(0, 260, 0, 30)
 helpLabel.Position = UDim2.new(0, 10, 0, 160)
@@ -163,7 +214,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- ===== GUI Button Logic =====
+-- ===== GUI Buttons =====
 speedBtn.MouseButton1Click:Connect(function()
     speedToggled = not speedToggled
 end)
@@ -190,21 +241,14 @@ RunService.RenderStepped:Connect(function()
     speedBtn.Text = string.format("Speed: %.2f", speed)
 
     if speedLbl then
-        local displaySpeed = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z).Magnitude
+        local displaySpeed = Vector3.new(hrp.Velocity.X,0,hrp.Velocity.Z).Magnitude
         speedLbl.Text = "Speed: " .. string.format("%.1f", displaySpeed)
     end
 end)
 
--- ===== Auto Bat Loop =====
+-- ===== Auto Bat =====
 RunService.Heartbeat:Connect(function()
     if autoBatToggled then
         tryHitBat()
     end
-end)
-
--- =====================================================
--- CHILLI HUB LOADER (ADDED BACK)
--- =====================================================
-pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
 end)
